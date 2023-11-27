@@ -1,12 +1,12 @@
-import NDK, { NDKSigner } from '@nostr-dev-kit/ndk';
+import NDK from '@nostr-dev-kit/ndk';
+import type { NDKSigner } from '@nostr-dev-kit/ndk';
 
-import { ApplicationType } from './types';
 import { assertNever } from './utilities';
+import type { ApplicationType } from './types';
 
-// TODO: move it to config or dotenv
-const localRelayPort = 8008;
-
-const devWriteRelays = [`ws://localhost:${localRelayPort}`];
+const devWriteRelays = process.env.DEV_WRITE_RELAY
+  ? [process.env.DEV_WRITE_RELAY]
+  : [];
 
 const globalReadRelays = [
   'wss://purplepag.es',

@@ -1,29 +1,28 @@
-import 'websocket-polyfill';
-
-const yargs = require('yargs/yargs');
-const { hideBin } = require('yargs/helpers');
+import yargs from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
+import type { NDKEvent } from '@nostr-dev-kit/ndk';
 
 import { getNDK } from '../relays';
-import { NDKEvent } from '@nostr-dev-kit/ndk';
 
-const argv = yargs(hideBin(process.argv)).option('event-id', {
+const parsedArguments = yargs(hideBin(process.argv)).option('event-id', {
   describe: 'ID of the event',
   type: 'string',
-  demandOption: true,
+  demandOption: true
 }).argv;
 
 async function application() {
+  const argv = await parsedArguments;
   const ndk = getNDK('Remote');
 
   const eventId = argv['event-id'];
 
   const subs = ndk.subscribe({
-    ['#e']: eventId,
+    ['#e']: [eventId]
   });
 
   console.log(`Listing related events to ${eventId}`);
 
-  subs.on('event', async (event: NDKEvent) => {
+  subs.on('event', (event: NDKEvent) => {
     console.log(event.rawEvent());
   });
 }

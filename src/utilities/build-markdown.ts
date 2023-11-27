@@ -1,7 +1,7 @@
 import { u } from 'unist-builder';
 import { unified } from 'unified';
 import rs from 'remark-stringify';
-import { NostrEvent } from '@nostr-dev-kit/ndk';
+import type { NostrEvent } from '@nostr-dev-kit/ndk';
 
 export async function buildMarkdownFromEvents(events: NostrEvent[]) {
   const processor = unified().use(rs);

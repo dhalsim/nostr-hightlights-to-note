@@ -1,9 +1,22 @@
-import NDK, { NDKEvent, NDKTag, NostrEvent } from '@nostr-dev-kit/ndk';
+import type { NDKTag, NostrEvent, NDKEvent } from '@nostr-dev-kit/ndk';
+import type NDK from '@nostr-dev-kit/ndk';
 
 export type NostrEventWithoutSig = Exclude<NostrEvent, 'sig'>;
 
+export function isFulfilled<T>(
+  result: PromiseSettledResult<T>
+): result is PromiseFulfilledResult<T> {
+  return result.status === 'fulfilled';
+}
+
+export function isRejected<T>(
+  result: PromiseSettledResult<T>
+): result is PromiseRejectedResult {
+  return result.status === 'rejected';
+}
+
 export function extractLogableEvent(event: NostrEvent): NostrEventWithoutSig {
-  const { sig, ...rest } = event;
+  const { sig: _, ...rest } = event;
 
   return rest;
 }
@@ -12,26 +25,30 @@ export async function getRelatedEvents(
   event: NostrEvent,
   ndk: NDK
 ): Promise<NostrEvent[]> {
-  const fetchEventTasks = event.tags
+  const fetchEventTasks: Promise<NDKEvent>[] = event.tags
     .filter((tagArray) => tagArray[0] === 'e')
-    .map(async (tagArray) => {
+    .map((tagArray) => {
       const eventId = tagArray[1];
 
-      const event = await ndk.fetchEvent(eventId);
-
-      // TODO: fetchEvent can return null
-      // should we handle this differently?
-
-      if (!event) {
-        throw new Error('Could not find the event');
-      }
-
-      return event;
+      return new Promise((resolve, reject) => {
+        return ndk
+          .fetchEvent(eventId)
+          .then((e) => {
+            if (!e) {
+              return reject(`Could not find the event with id ${eventId}`);
+            } else {
+              return resolve(e);
+            }
+          })
+          .catch(reject);
+      });
     });
 
-  const events = await Promise.all(fetchEventTasks);
+  const settledEvents = await Promise.allSettled(fetchEventTasks);
 
-  return events.map((e) => e.rawEvent());
+  settledEvents.filter(isRejected).forEach((res) => console.log(res.reason));
+
+  return settledEvents.filter(isFulfilled).map((e) => e.value.rawEvent());
 }
 
 function getTags(event: NostrEvent, tagMatch: string) {

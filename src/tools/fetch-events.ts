@@ -1,12 +1,11 @@
-import 'websocket-polyfill';
-
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
+import { nip19 } from 'nostr-tools';
+import type { NDKEvent, NDKFilter } from '@nostr-dev-kit/ndk';
 
 import { getNDK } from '../relays';
-import { NDKEvent, NDKFilter } from '@nostr-dev-kit/ndk';
 import { findLatestCreatedAt } from '../utilities';
-import { ApplicationType } from '../types';
+import type { ApplicationType } from '../types';
 
 const parsedArguments = yargs(hideBin(process.argv))
   .option('application-type', {
@@ -37,12 +36,20 @@ const parsedArguments = yargs(hideBin(process.argv))
     demandOption: false, // Not mandatory,
     default: 10
   })
+  .option('author', {
+    describe: 'author npub',
+    type: 'string',
+    demandOption: false // Not mandatory
+  })
   .conflicts('event-id', 'url') // Specify that event-id and url are mutually exclusive
   .conflicts('event-id', 'kinds') // Specify that event-id and kinds are mutually exclusive
+  .conflicts('event-id', 'author') // Specify that event-id and author are mutually exclusive
   .check((arg) => {
-    // Check that at least one of event-id, url, kinds is provided
-    if (!arg['event-id'] && !arg['url'] && !arg['kinds']) {
-      throw new Error('Either --event-id, --url or --kinds must be provided');
+    // Check that at least one of event-id, url, kinds, author is provided
+    if (!arg['event-id'] && !arg['url'] && !arg['kinds'] && !arg['author']) {
+      throw new Error(
+        'Either --event-id, --url, --kinds, or --author must be provided'
+      );
     }
 
     return true; // Tell yargs that the arguments passed the check
@@ -60,9 +67,15 @@ async function application() {
   const eventId = argv['event-id'];
   const url = argv['url'];
 
-  const kinds = argv['kinds']
-    ? argv['kinds'].split(',').map(parseInt)
-    : undefined;
+  const authorHex = argv['author'] ? nip19.decode(argv['author']) : undefined;
+
+  if (authorHex && authorHex.type !== 'npub') {
+    throw new Error('author must be an npub address');
+  }
+
+  const authors = authorHex ? [authorHex.data] : undefined;
+
+  const kinds = argv['kinds'] ? argv['kinds'].split(',').map(parseInt) : [1];
 
   if (eventId) {
     const event = await ndk.fetchEvent(eventId);
@@ -75,7 +88,8 @@ async function application() {
   } else {
     const filterObject: NDKFilter = {
       limit,
-      kinds
+      kinds,
+      authors
     };
 
     if (url) {
