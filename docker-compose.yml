@@ -3,8 +3,7 @@ services:
     build: .
     ports:
       - ${PORT}:3000
-    depends_on:
-      - nostream
+
   nostream:
     image: dhalsim/nostream:latest
     container_name: nostream
@@ -12,7 +11,7 @@ services:
       SECRET: ${NOSTREAM_SECRET}
       RELAY_PORT: 8008
       # Master
-      NOSTR_CONFIG_DIR: /home/node/nostream-settings
+      NOSTR_CONFIG_DIR: /home/node/.nostr
       DB_HOST: nostream-db
       DB_PORT: 5432
       DB_USER: nostr_ts_relay
@@ -79,6 +78,7 @@ services:
     restart: on-failure
     networks:
       default:
+  
   nostream-db:
     image: postgres
     container_name: nostream-db
@@ -102,6 +102,7 @@ services:
       start_period: 360s
     ports:
       - 127.0.0.1:${PG_PORT}:5432
+  
   nostream-cache:
     image: redis:7.0.5-alpine3.16
     container_name: nostream-cache
