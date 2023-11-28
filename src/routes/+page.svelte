@@ -1,7 +1,16 @@
 <script>
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcome_fallback from '$lib/images/svelte-welcome.png';
+	import CodeMirror from "svelte-codemirror-editor";
+	import { markdown } from "@codemirror/lang-markdown";
+
+	let value = `* nostr:note1whxfpqukvkv3l20td8c0a5kxrv8are7j3kptzkk4def0ta9g0a2q73k0cm
+  So true!&#x20;
+
+* One of the key differences between Nostr and other social media platforms is its decentralised architecture.
+
+* Nostr places a high emphasis on security and privacy for its users. All data on the platform is encrypted end-to-end and stored on decentralised servers. This means that only the user has control over their data and it is not stored in a central location that can be hacked or monitored.
+
+* Nostr is designed to be a community-driven platform. It encourages users to connect with others and build relationships, rather than simply posting content for likes and followers.
+`;
 </script>
 
 <svelte:head>
@@ -10,22 +19,12 @@
 </svelte:head>
 
 <section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcome_fallback} alt="Welcome" />
-			</picture>
-		</span>
-
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
+	<CodeMirror bind:value lang={markdown()} styles={{
+		"&": {
+				width: "500px",
+				maxWidth: "100%"
+		}
+}} lineWrapping={true} />
 </section>
 
 <style>
@@ -35,25 +34,5 @@
 		justify-content: center;
 		align-items: center;
 		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
 	}
 </style>

@@ -14,13 +14,14 @@
     "fetch-related-events": "bun run src/tools/fetch-related-events.ts",
     "lint": "eslint . --ext .ts",
     "test:unit": "bun test src/**/*.test.ts",
-    "test:integration": "bun test src/**/*.itest.ts"
+    "test:integration": "bun test src/**/*.spec.ts"
   },
   "keywords": [],
   "type": "module",
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@codemirror/lang-markdown": "^6.2.3",
     "@nostr-dev-kit/ndk": "^2.0.5",
     "@types/node": "^20.9.0",
     "dotenv": "16.3.1",
@@ -28,6 +29,7 @@
     "remark": "^15.0.1",
     "remark-gfm": "^4.0.0",
     "remark-stringify": "^11.0.0",
+    "svelte-codemirror-editor": "^1.2.0",
     "unified": "^11.0.4",
     "unist-builder": "^4.0.0",
     "websocket-polyfill": "^0.0.3",
