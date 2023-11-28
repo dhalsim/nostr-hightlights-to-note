@@ -3,6 +3,8 @@ services:
     build: .
     ports:
       - ${PORT}:3000
+    volumes:
+      - ${PWD}/.nostr:/home/node/.nostr
 
   nostream:
     image: dhalsim/nostream:latest
