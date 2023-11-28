@@ -1,0 +1,6 @@
+/.nostr
+/.svelte-kit
+/build
+/node_modules
+!.nostr/nostream-settings.yaml
+

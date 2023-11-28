@@ -1,0 +1,129 @@
+services:
+  nostr-application:
+    build: .
+    ports:
+      - ${PORT}:3000
+    depends_on:
+      - nostream
+  nostream:
+    image: dhalsim/nostream:latest
+    container_name: nostream
+    environment:
+      SECRET: ${NOSTREAM_SECRET}
+      RELAY_PORT: 8008
+      # Master
+      NOSTR_CONFIG_DIR: /home/node/nostream-settings
+      DB_HOST: nostream-db
+      DB_PORT: 5432
+      DB_USER: nostr_ts_relay
+      DB_PASSWORD: nostr_ts_relay
+      DB_NAME: nostr_ts_relay
+      DB_MIN_POOL_SIZE: 16
+      DB_MAX_POOL_SIZE: 64
+      DB_ACQUIRE_CONNECTION_TIMEOUT: 60000
+      # Read Replica
+      READ_REPLICAS: 2
+      READ_REPLICA_ENABLED: 'false'
+      # Read Replica No. 1
+      RR0_DB_HOST: db
+      RR0_DB_PORT: 5432
+      RR0_DB_USER: nostr_ts_relay
+      RR0_DB_PASSWORD: nostr_ts_relay
+      RR0_DB_NAME: nostr_ts_relay
+      RR0_DB_MIN_POOL_SIZE: 16
+      RR0_DB_MAX_POOL_SIZE: 64
+      RR0_DB_ACQUIRE_CONNECTION_TIMEOUT: 10000
+      # Read Replica No. 2
+      RR1_DB_HOST: db
+      RR1_DB_PORT: 5432
+      RR1_DB_USER: nostr_ts_relay
+      RR1_DB_PASSWORD: nostr_ts_relay
+      RR1_DB_NAME: nostr_ts_relay
+      RR1_DB_MIN_POOL_SIZE: 16
+      RR1_DB_MAX_POOL_SIZE: 64
+      RR1_DB_ACQUIRE_CONNECTION_TIMEOUT: 10000
+      # Add RR2, RR3, etc. to configure more read replicas
+      # Redis
+      REDIS_HOST: nostream-cache
+      REDIS_PORT: 6379
+      REDIS_USER: default
+      REDIS_PASSWORD: nostr_ts_relay
+      TOR_HOST: tor_proxy
+      TOR_CONTROL_PORT: 9051
+      TOR_PASSWORD: nostr_ts_relay
+      HIDDEN_SERVICE_PORT: 80
+      # Payments Processors
+      # Zebedee
+      ZEBEDEE_API_KEY: ${ZEBEDEE_API_KEY}
+      # Nodeless.io
+      NODELESS_API_KEY: ${NODELESS_API_KEY}
+      NODELESS_WEBHOOK_SECRET: ${NODELESS_WEBHOOK_SECRET}
+      # OpenNode
+      OPENNODE_API_KEY: ${OPENNODE_API_KEY}
+      # Lnbits
+      LNBITS_API_KEY: ${LNBITS_API_KEY}
+      # Enable DEBUG for troubleshooting. Examples:
+      # DEBUG: "primary:*"
+      # DEBUG: "worker:*"
+      # DEBUG: "knex:query"
+    user: node:node
+    volumes:
+      - ${PWD}/.nostr:/home/node/.nostr
+    ports:
+      - 127.0.0.1:${NOSTREAM_PORT}:8008
+    depends_on:
+      nostream-cache:
+        condition: service_healthy
+      nostream-db:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      default:
+  nostream-db:
+    image: postgres
+    container_name: nostream-db
+    environment:
+      POSTGRES_DB: nostr_ts_relay
+      POSTGRES_USER: nostr_ts_relay
+      POSTGRES_PASSWORD: nostr_ts_relay
+    volumes:
+      - ${PWD}/.nostr/data:/var/lib/postgresql/data
+      - ${PWD}/.nostr/db-logs:/var/log/postgresql
+      - ${PWD}/postgresql.conf:/postgresql.conf
+    networks:
+      default:
+    command: postgres -c 'config_file=/postgresql.conf'
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nostr_ts_relay"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 360s
+    ports:
+      - 127.0.0.1:${PG_PORT}:5432
+  nostream-cache:
+    image: redis:7.0.5-alpine3.16
+    container_name: nostream-cache
+    volumes:
+      - cache:/data
+    command: redis-server --loglevel warning --requirepass nostr_ts_relay
+    networks:
+      default:
+    restart: always
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping", "|", "grep", "PONG" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+networks:
+  default:
+    name: nostream
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.10.10.0/24
+
+volumes:
+  cache:
