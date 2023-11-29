@@ -4,14 +4,18 @@ import { nip19 } from 'nostr-tools';
 import type { NDKEvent, NDKFilter } from '@nostr-dev-kit/ndk';
 
 import { getNDK } from '../relays';
-import { findLatestCreatedAt } from '../utilities';
+import {
+  extractLogableEvent,
+  findLatestCreatedAt,
+  stringify
+} from '../utilities';
 import type { ApplicationType } from '../types';
 
 const parsedArguments = yargs(hideBin(process.argv))
   .option('application-type', {
     describe: 'Type of the application',
     choices: ['Local', 'Remote', 'All'],
-    default: 'Local',
+    default: 'Remote',
     type: 'string',
     demandOption: true // This makes the argument mandatory
   })
@@ -78,13 +82,15 @@ async function application() {
   const kinds = argv['kinds'] ? argv['kinds'].split(',').map(parseInt) : [1];
 
   if (eventId) {
+    console.log('Fetch by event id');
+
     const event = await ndk.fetchEvent(eventId);
 
     if (!event) {
       throw new Error('Couldnt fetch event');
     }
 
-    console.log(event.rawEvent());
+    console.log(stringify(event.rawEvent()));
   } else {
     const filterObject: NDKFilter = {
       limit,
@@ -101,6 +107,15 @@ async function application() {
 
     console.log('events size', events.size);
     console.log('since', since);
+
+    let count = 0;
+    events.forEach((e) => {
+      count++;
+      console.log(
+        `${count}. event`,
+        stringify(extractLogableEvent(e.rawEvent()))
+      );
+    });
 
     if (since) {
       filterObject.since = since + 1;

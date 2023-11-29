@@ -30,6 +30,7 @@
     "remark-gfm": "^4.0.0",
     "remark-stringify": "^11.0.0",
     "svelte-codemirror-editor": "^1.2.0",
+    "svelte-toggle": "^4.0.0",
     "unified": "^11.0.4",
     "unist-builder": "^4.0.0",
     "websocket-polyfill": "^0.0.3",

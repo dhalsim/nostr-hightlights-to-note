@@ -4,9 +4,7 @@ import type { NDKSigner } from '@nostr-dev-kit/ndk';
 import { assertNever } from './utilities';
 import type { ApplicationType } from './types';
 
-const devWriteRelays = process.env.DEV_WRITE_RELAY
-  ? [process.env.DEV_WRITE_RELAY]
-  : [];
+const devWriteRelays = ['ws://localhost:8008'];
 
 const globalReadRelays = [
   'wss://purplepag.es',
@@ -40,6 +38,7 @@ export function getNDK(type: ApplicationType, signer?: NDKSigner) {
 
   return new NDK({
     explicitRelayUrls: relays,
+    devWriteRelayUrls: ['ws://localhost:8008'],
     signer
   });
 }
