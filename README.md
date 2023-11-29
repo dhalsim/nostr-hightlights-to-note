@@ -69,6 +69,7 @@ Useful tools to fetch specific events for easy lookup from a bunch of remote rel
 
 # TODO
 
+- [ ] add links
 - [ ] find the most zaped notes and sort by it
 - [ ] find related events and create sub lists (depth?)
 - [ ] append switch

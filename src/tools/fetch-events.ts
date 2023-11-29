@@ -102,10 +102,11 @@ async function application() {
       filterObject['#r'] = [url];
     }
 
-    const events = await ndk.fetchEvents(filterObject);
+    const eventSet = await ndk.fetchEvents(filterObject);
+    const events = [...eventSet];
     const since = findLatestCreatedAt(events);
 
-    console.log('events size', events.size);
+    console.log('events length', events.length);
     console.log('since', since);
 
     let count = 0;
@@ -129,7 +130,7 @@ async function application() {
 
       console.log(event.rawEvent());
 
-      events.add(event);
+      eventSet.add(event);
     });
   }
 }

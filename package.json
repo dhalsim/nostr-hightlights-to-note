@@ -23,8 +23,10 @@
   "dependencies": {
     "@codemirror/lang-markdown": "^6.2.3",
     "@nostr-dev-kit/ndk": "^2.0.5",
+    "@types/lodash.groupby": "^4.6.9",
     "@types/node": "^20.9.0",
     "dotenv": "16.3.1",
+    "lodash.groupby": "^4.6.0",
     "nostr-tools": "^1.17.0",
     "remark": "^15.0.1",
     "remark-gfm": "^4.0.0",

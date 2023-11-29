@@ -1,5 +1,6 @@
 import type { NDKTag, NostrEvent, NDKEvent } from '@nostr-dev-kit/ndk';
 import type NDK from '@nostr-dev-kit/ndk';
+import groupBy from 'lodash.groupby';
 
 export type NostrEventWithoutSig = Exclude<NostrEvent, 'sig'>;
 
@@ -69,12 +70,22 @@ export function getUrlTag(event: NostrEvent): string | null {
   return rtag && rtag.length === 2 ? rtag[1] : null;
 }
 
-export function findLatestCreatedAt(events: Set<NDKEvent>): number {
-  return [...events].reduce((acc, curr) => {
+export function findLatestCreatedAt(events: NDKEvent[]): number {
+  return events.reduce((acc, curr) => {
     if (curr.created_at && curr.created_at > acc) {
       acc = curr.created_at;
     }
 
     return acc;
   }, 0);
+}
+
+type ObjectWithTags = Pick<NostrEvent, 'tags'>;
+
+export function groupByTag(events: ObjectWithTags[], tag: string) {
+  return groupBy(events, (obj) => {
+    const rTag = obj.tags.find((t) => t[0] === tag);
+
+    return rTag ? rTag[1] : 'ungrouped';
+  });
 }
