@@ -137,7 +137,7 @@ describe('events', () => {
     ).toEqual([
       { 'https://url1.co': 3 },
       { 'https://url2.co': 1 },
-      { unmatched: 1 }
+      { ungrouped: 1 }
     ]);
   });
 });
