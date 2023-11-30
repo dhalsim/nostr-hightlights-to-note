@@ -3,8 +3,6 @@ import type { NostrEvent } from '@nostr-dev-kit/ndk';
 
 import { getUrlTag, groupByTag } from './events';
 
-type ObjectWithTags = Pick<NostrEvent, 'tags'>;
-
 describe('events', () => {
   test('find url in event', () => {
     const eventWithUrl = {
@@ -43,7 +41,7 @@ describe('events', () => {
   });
 
   test('group events by tag', () => {
-    const eventsArr: ObjectWithTags[] = [
+    const eventsArr: NostrEvent[] = [
       {
         tags: [
           [
@@ -128,7 +126,7 @@ describe('events', () => {
           ]
         ]
       }
-    ];
+    ] as NostrEvent[];
 
     const grouped = groupByTag(eventsArr, 'r');
 

@@ -1,6 +1,10 @@
 import { test, expect, describe } from '@jest/globals';
+import { u } from 'unist-builder';
 
-import { buildMarkdownFromEvents } from './build-markdown';
+import {
+  convertEventsToMarkdown,
+  stringifyUnifiedMarkdown
+} from './build-markdown';
 
 describe('markdown', () => {
   test('create an unordered list from events', async () => {
@@ -110,8 +114,34 @@ describe('markdown', () => {
       }
     ];
 
-    const markdownText = await buildMarkdownFromEvents(eventsArr);
+    const markdownText = convertEventsToMarkdown(eventsArr);
 
     expect(markdownText).toMatchSnapshot();
+  });
+
+  test('mdast to markdown convertion', () => {
+    const mdast = u('root', [
+      u('list', { ordered: false }, [
+        u('listItem', [
+          u('paragraph', [u('text', 'parent list 1')]),
+          u('list', { ordered: false }, [
+            u('listItem', [
+              u('paragraph', [u('text', 'child A of parent list 1')])
+            ]),
+            u('listItem', [
+              u('paragraph', [u('text', 'child B of parent list 1')])
+            ])
+          ])
+        ]),
+        u('listItem', [u('paragraph', [u('text', 'parent list 2')])])
+      ])
+    ]);
+
+    // * parent list 1
+    //   * child A of parent list 1
+    //   * child B of parent list 1
+    // * parent list 2
+
+    expect(stringifyUnifiedMarkdown(mdast)).toMatchSnapshot();
   });
 });

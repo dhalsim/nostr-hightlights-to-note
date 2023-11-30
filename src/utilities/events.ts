@@ -80,9 +80,7 @@ export function findLatestCreatedAt(events: NDKEvent[]): number {
   }, 0);
 }
 
-type ObjectWithTags = Pick<NostrEvent, 'tags'>;
-
-export function groupByTag(events: ObjectWithTags[], tag: string) {
+export function groupByTag(events: NostrEvent[], tag: string) {
   return groupBy(events, (obj) => {
     const rTag = obj.tags.find((t) => t[0] === tag);
 
